@@ -1,0 +1,109 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f4f8;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+h1 {
+  background: #004080;
+  color: white;
+  padding: 1em;
+  margin: 0;
+  font-size: 1.8em;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1em;
+}
+
+.camera-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2em;
+  background: white;
+  padding: 1em;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  margin-bottom: 1em;
+}
+
+#video {
+  border: 3px solid #004080;
+  width: 640px;
+  height: 360px;
+  border-radius: 8px;
+}
+
+.status-box {
+  font-size: 1.2em;
+  background: #e8f4ff;
+  border: 2px solid #004080;
+  border-radius: 8px;
+  padding: 1em;
+  width: 220px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.status-box form {
+  margin-top: 1em;
+}
+
+.status-box input[type="number"] {
+  font-size: 1em;
+  padding: 0.3em;
+  width: 70px;
+}
+
+.status-box button {
+  margin-top: 0.5em;
+  font-size: 0.9em;
+  padding: 0.4em 0.8em;
+  background: #004080;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.predict-box {
+  font-size: 1.4em;
+  background: #e8f4ff;
+  border: 2px solid #004080;
+  border-radius: 8px;
+  padding: 1em;
+  width: 200px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.predict-box button {
+  margin-top: 0.8em;
+  background: #004080;
+  color: white;
+  border: none;
+  padding: 0.5em 1em;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#graph-container {
+  width: 90%;
+  height: 220px;
+  background: white;
+  border: 1px solid #ccc;
+  margin: 1em auto;
+  padding: 1em;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.05);
+}
+
+canvas {
+  height: 100% !important;
+}

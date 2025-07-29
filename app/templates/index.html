@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>混雑状況モニター</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h1>混雑状況モニター</h1>
+  <div class="container">
+    <div class="camera-section">
+      <div class="status-box" id="status">
+        <div id="status-text">定員数を入力してください</div>
+        <form id="capacity-form" style="margin-top: 0.8em;">
+          <label style="font-size: 0.9em;">定員: 
+            <input type="number" name="capacity" required min="1" style="width: 60px; padding: 0.3em;" />
+          </label>
+          <button type="submit" style="margin-top: 0.5em; padding: 0.3em 0.6em;">設定</button>
+        </form>
+      </div>
+      <img id="video" src="/video_feed" />
+      <div class="predict-box">
+        <div id="predict"></div>
+        <button onclick="window.location.href='/download_csv'">CSVダウンロード</button>
+      </div>
+    </div>
+
+    <div id="graph-container">
+      <canvas id="chart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    const ctx = document.getElementById('chart').getContext('2d');
+    const graphContainer = document.getElementById('graph-container');
+    const statusText = document.getElementById('status-text');
+    const predict = document.getElementById('predict');
+
+    let capacity = null;
+    let intervalStage = 0;
+    const stages = [1, 10, 30, 60, 600, 1800]; // 秒
+    const rawData = [];
+    let latestReducedData = [];
+
+    const data = {
+      labels: [],
+      datasets: [{
+        label: '人数',
+        data: [],
+        borderColor: 'blue',
+        backgroundColor: 'lightblue',
+        tension: 0.3
+      }]
+    };
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            suggestedMax: 10
+          }
+        }
+      }
+    });
+
+    document.getElementById('capacity-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const res = await fetch('/set_capacity', {
+        method: 'POST',
+        body: formData
+      });
+      if (res.ok) {
+        const formCapacity = formData.get('capacity');
+        capacity = parseInt(formCapacity, 10);
+        chart.options.scales.y.max = capacity;
+        graphContainer.style.display = 'block';
+        alert('定員数が設定されました');
+      }
+    });
+
+    function aggregateData() {
+      const interval = stages[intervalStage];
+      const reduced = [];
+      for (let i = 0; i < rawData.length; i += interval) {
+        const chunk = rawData.slice(i, i + interval);
+        if (chunk.length > 0) {
+          const avg = chunk.reduce((sum, d) => sum + d.count, 0) / chunk.length;
+          reduced.push({
+            timestamp: chunk[Math.floor(chunk.length / 2)].timestamp,
+            count: avg
+          });
+        }
+      }
+
+      latestReducedData = reduced;
+      data.labels = reduced.map(d => d.timestamp);
+      data.datasets[0].data = reduced.map(d => d.count);
+      chart.update();
+
+      if (reduced.length > 100 && intervalStage < stages.length - 1) {
+        intervalStage++;
+      }
+    }
+
+    socket.on('crowd_update', ({ count, level, capacity: newCap, show_graph, timestamp, prediction_10min }) => {
+      if (capacity !== null) {
+        statusText.textContent = `${level}（${count}/${capacity}人）`;
+      } else {
+        statusText.textContent = `定員数未設定（${count}人）`;
+      }
+
+      if (show_graph && capacity !== null) {
+        rawData.push({ timestamp, count });
+        aggregateData();
+      }
+
+      if (prediction_10min !== undefined && prediction_10min !== null) {
+        const cappedPrediction = Math.min(prediction_10min, capacity);
+        predict.textContent = `10分後の予測人数: ${cappedPrediction}人`;
+      }
+    });
+  </script>
+</body>
+</html>

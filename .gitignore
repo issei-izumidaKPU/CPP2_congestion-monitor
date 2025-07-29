@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+.yolovenv/
+
+# Model weight file
+*.pt
+
+# OS metadata
+.DS_Store
