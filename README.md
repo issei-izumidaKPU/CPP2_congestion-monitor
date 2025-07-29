@@ -4,6 +4,8 @@ source venv/bin/activate　#仮想環境を実行
 
 cd app
 
+pip install flask opencv-python　#必要なパッケージをインストール
+
 python camera_stream_server.py  #まず、カメラを起動するプログラムを実行
 
 #ここにアクセスしてカメラの起動を確認できたら
